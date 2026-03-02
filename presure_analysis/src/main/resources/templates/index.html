@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高校毕业生就业压力分析系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1>高校毕业生就业压力分析系统</h1>
+        </header>
+
+        <!-- 导航栏 -->
+        <nav class="navbar">
+            <a href="/" class="nav-item active">首页</a>
+            <a href="/employment/analysis" class="nav-item">就业数据分析</a>
+            <a href="/industry/analysis" class="nav-item">行业需求分析</a>
+            <a href="/pressure/analysis" class="nav-item">就业压力分析</a>
+            <a href="/data/manage" class="nav-item">数据管理</a>
+        </nav>
+
+        <!-- 统计卡片 -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3 id="totalCount">0</h3>
+                    <p>数据总量</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3 id="avgRate">0%</h3>
+                    <p>平均就业率</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3 id="avgSalary">0</h3>
+                    <p>平均薪资(元)</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3 id="totalGraduates">0</h3>
+                    <p>总毕业生人数</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="charts-container">
+            <div class="chart-box">
+                <h2 class="chart-title">历年就业率趋势（2021-2025）</h2>
+                <div id="employmentRateChart" class="chart"></div>
+            </div>
+
+            <div class="chart-box">
+                <h2 class="chart-title">各专业平均薪资TOP10（2025届）</h2>
+                <div id="salaryChart" class="chart"></div>
+            </div>
+
+            <div class="chart-box full-width">
+                <h2 class="chart-title">2025年各大学就业率对比</h2>
+                <div id="universityChart" class="chart"></div>
+            </div>
+
+            <div class="chart-box full-width">
+                <h2 class="chart-title">2025年各专业毕业生人数分布</h2>
+                <div id="graduateCountChart" class="chart"></div>
+            </div>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="action-container">
+            <h2 class="section-title">快速操作</h2>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="startCrawler('employment')">
+                    <span>爬取就业数据</span>
+                </button>
+                <button class="action-btn" onclick="startCrawler('industry')">
+                    <span>爬取行业数据</span>
+                </button>
+                <button class="action-btn" onclick="refreshData()">
+                    <span>刷新数据</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>高校毕业生就业压力分析系统</p>
+        </footer>
+    </div>
+
+    <script src="/js/index.js"></script>
+</body>
+</html>

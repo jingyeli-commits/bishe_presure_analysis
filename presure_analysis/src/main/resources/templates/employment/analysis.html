@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高校毕业生就业压力分析系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>就业数据分析</h1>
+        </header>
+
+        <nav class="navbar">
+            <a href="/" class="nav-item">首页</a>
+            <a href="/employment/analysis" class="nav-item active">就业数据分析</a>
+            <a href="/industry/analysis" class="nav-item">行业需求分析</a>
+            <a href="/pressure/analysis" class="nav-item">就业压力分析</a>
+            <a href="/data/manage" class="nav-item">数据管理</a>
+        </nav>
+
+        <div class="charts-container">
+            <div class="chart-box full-width">
+                <h2 class="chart-title">历年就业率趋势分析</h2>
+                <div id="trendChart" class="chart" style="height: 500px;"></div>
+            </div>
+
+            <div class="chart-box">
+                <h2 class="chart-title">TOP10高薪专业</h2>
+                <div id="highSalaryChart" class="chart"></div>
+            </div>
+
+            <div class="chart-box">
+                <h2 class="chart-title">专业对口就业率</h2>
+                <div id="matchRateChart" class="chart"></div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>高校毕业生就业压力分析系统</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTrendChart();
+            loadHighSalaryChart();
+            loadMatchRateChart();
+        });
+
+        function loadTrendChart() {
+            axios.get('/system/employment/rate/year')
+                .then(response => {
+                    if (response.data.code === 200) {
+                        const data = response.data.data;
+                        const chart = echarts.init(document.getElementById('trendChart'));
+                        
+                        const option = {
+                            title: {
+                                text: '就业率变化趋势',
+                                left: 'center'
+                            },
+                            tooltip: {
+                                trigger: 'axis'
+                            },
+                            xAxis: {
+                                type: 'category',
+                                data: data.map(item => item.year + '年')
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: '就业率(%)',
+                                min: 80
+                            },
+                            series: [{
+                                data: data.map(item => parseFloat(item.rate).toFixed(2)),
+                                type: 'line',
+                                smooth: true,
+                                lineStyle: { width: 4 },
+                                itemStyle: { color: '#667eea' },
+                                areaStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                        { offset: 0, color: 'rgba(102, 126, 234, 0.5)' },
+                                        { offset: 1, color: 'rgba(102, 126, 234, 0.1)' }
+                                    ])
+                                },
+                                markPoint: {
+                                    data: [
+                                        { type: 'max', name: '最大值' },
+                                        { type: 'min', name: '最小值' }
+                                    ]
+                                },
+                                markLine: {
+                                    data: [{ type: 'average', name: '平均值' }]
+                                }
+                            }]
+                        };
+                        
+                        chart.setOption(option);
+                        window.addEventListener('resize', () => chart.resize());
+                    }
+                });
+        }
+
+        function loadHighSalaryChart() {
+            axios.get('/system/employment/salary/major')
+                .then(response => {
+                    if (response.data.code === 200) {
+                        const data = response.data.data;
+                        const chart = echarts.init(document.getElementById('highSalaryChart'));
+                        
+                        const option = {
+                            tooltip: {
+                                trigger: 'axis',
+                                axisPointer: { type: 'shadow' }
+                            },
+                            xAxis: {
+                                type: 'value',
+                                name: '月薪(元)'
+                            },
+                            yAxis: {
+                                type: 'category',
+                                data: data.map(item => item.major)
+                            },
+                            series: [{
+                                data: data.map(item => parseFloat(item.salary).toFixed(0)),
+                                type: 'bar',
+                                itemStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                        { offset: 0, color: '#667eea' },
+                                        { offset: 1, color: '#764ba2' }
+                                    ])
+                                },
+                                label: {
+                                    show: true,
+                                    position: 'right',
+                                    formatter: '¥{c}'
+                                }
+                            }],
+                            grid: { left: '25%', right: '15%' }
+                        };
+                        
+                        chart.setOption(option);
+                        window.addEventListener('resize', () => chart.resize());
+                    }
+                });
+        }
+
+        function loadMatchRateChart() {
+            // 模拟专业对口率数据
+            const data = [
+                { major: '计算机科学', rate: 85 },
+                { major: '软件工程', rate: 88 },
+                { major: '人工智能', rate: 82 },
+                { major: '金融学', rate: 75 },
+                { major: '会计学', rate: 78 }
+            ];
+            
+            const chart = echarts.init(document.getElementById('matchRateChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '65%',
+                    data: data.map(item => ({
+                        name: item.major,
+                        value: item.rate
+                    })),
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    },
+                    label: {
+                        formatter: '{b}: {d}%'
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+    </script>
+</body>
+</html>

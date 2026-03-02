@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高校毕业生就业压力分析系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>就业压力分析</h1>
+    </header>
+
+    <nav class="navbar">
+        <a href="/" class="nav-item">首页</a>
+        <a href="/employment/analysis" class="nav-item">就业数据分析</a>
+        <a href="/industry/analysis" class="nav-item">行业需求分析</a>
+        <a href="/pressure/analysis" class="nav-item active">就业压力分析</a>
+        <a href="/data/manage" class="nav-item">数据管理</a>
+    </nav>
+
+    <!-- 压力指标说明 -->
+    <div class="info-card" style="margin: 30px; padding: 25px; background: #f8f9fa; border-radius: 15px; border-left: 5px solid #e74c3c;">
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">压力指数说明</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <strong style="color: #27ae60;">低压力 (0-40)</strong>
+                <p style="margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;">就业形势较好，竞争适中</p>
+            </div>
+            <div>
+                <strong style="color: #f39c12;">中压力 (40-60)</strong>
+                <p style="margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;">就业有一定压力，需努力</p>
+            </div>
+            <div>
+                <strong style="color: #e74c3c;">高压力 (60-100)</strong>
+                <p style="margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9em;">就业压力较大，竞争激烈</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-container">
+        <div class="chart-box">
+            <h2 class="chart-title">2025年就业压力TOP10专业</h2>
+            <div id="topPressureChart" class="chart"></div>
+        </div>
+
+        <div class="chart-box">
+            <h2 class="chart-title">历年平均就业压力趋势</h2>
+            <div id="pressureTrendChart" class="chart"></div>
+        </div>
+
+        <div class="chart-box full-width">
+            <h2 class="chart-title">重点专业压力指数对比（2021-2025）</h2>
+            <div id="majorCompareChart" class="chart" style="height: 500px;"></div>
+        </div>
+
+        <!-- 专业查询工具 -->
+        <div class="chart-box full-width">
+            <h2 class="chart-title">专业压力趋势查询</h2>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <label for="majorSelect" style="font-weight: bold; margin-right: 10px;">选择专业:</label>
+                    <select id="majorSelect" style="padding: 8px 15px; font-size: 1em; border: 2px solid #ddd; border-radius: 8px; width: 300px;">
+                        <option value="计算机科学与技术">计算机科学与技术</option>
+                        <option value="软件工程">软件工程</option>
+                        <option value="人工智能">人工智能</option>
+                        <option value="数据科学">数据科学</option>
+                        <option value="金融学">金融学</option>
+                        <option value="市场营销">市场营销</option>
+                        <option value="电子商务">电子商务</option>
+                    </select>
+                    <button onclick="searchMajorTrend()" style="padding: 8px 25px; margin-left: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1em; cursor: pointer;">查询</button>
+                </div>
+                <div id="searchResultChart" class="chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>高校毕业生就业压力分析系统</p>
+    </footer>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTopPressureChart();
+        loadPressureTrendChart();
+        loadMajorCompareChart();
+        searchMajorTrend(); // 默认加载第一个专业
+    });
+
+    // 压力最高的专业
+    function loadTopPressureChart() {
+        axios.get('/system/pressure/top/majors?year=2025')
+            .then(response => {
+                if (response.data.code === 200) {
+                    const data = response.data.data;
+                    const chart = echarts.init(document.getElementById('topPressureChart'));
+
+                    const option = {
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: { type: 'shadow' },
+                            formatter: function(params) {
+                                const value = params[0].value;
+                                let level = '低压力';
+                                let color = '#27ae60';
+                                if (value >= 60) {
+                                    level = '高压力';
+                                    color = '#e74c3c';
+                                } else if (value >= 40) {
+                                    level = '中压力';
+                                    color = '#f39c12';
+                                }
+                                return `${params[0].name}<br/>压力指数: ${value}<br/><span style="color:${color}">【${level}】</span>`;
+                            }
+                        },
+                        xAxis: {
+                            type: 'value',
+                            name: '压力指数',
+                            max: 100
+                        },
+                        yAxis: {
+                            type: 'category',
+                            data: data.map(item => item.major),
+                            axisLabel: { interval: 0, fontSize: 11 }
+                        },
+                        series: [{
+                            data: data.map(item => ({
+                                value: parseFloat(item.pressure).toFixed(1),
+                                itemStyle: {
+                                    color: item.pressure >= 60 ? '#e74c3c' :
+                                           item.pressure >= 40 ? '#f39c12' : '#27ae60'
+                                }
+                            })),
+                            type: 'bar',
+                            label: {
+                                show: true,
+                                position: 'right',
+                                formatter: '{c}'
+                            }
+                        }],
+                        grid: { left: '25%', right: '15%' }
+                    };
+
+                    chart.setOption(option);
+                    window.addEventListener('resize', () => chart.resize());
+                }
+            })
+            .catch(error => {
+                console.error('加载压力排行失败:', error);
+            });
+    }
+
+    // 历年平均压力趋势
+    function loadPressureTrendChart() {
+        axios.get('/system/pressure/avg/year')
+            .then(response => {
+                if (response.data.code === 200) {
+                    const data = response.data.data;
+                    const chart = echarts.init(document.getElementById('pressureTrendChart'));
+
+                    const option = {
+                        tooltip: {
+                            trigger: 'axis'
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: data.map(item => item.year + '年'),
+                            boundaryGap: false
+                        },
+                        yAxis: {
+                            type: 'value',
+                            name: '平均压力指数',
+                            min: 30,
+                            max: 70
+                        },
+                        series: [{
+                            data: data.map(item => parseFloat(item.avgPressure).toFixed(1)),
+                            type: 'line',
+                            smooth: true,
+                            lineStyle: { width: 3, color: '#e74c3c' },
+                            itemStyle: { color: '#e74c3c' },
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: 'rgba(231, 76, 60, 0.3)' },
+                                    { offset: 1, color: 'rgba(231, 76, 60, 0.05)' }
+                                ])
+                            },
+                            markPoint: {
+                                data: [
+                                    { type: 'max', name: '最大值' },
+                                    { type: 'min', name: '最小值' }
+                                ]
+                            }
+                        }],
+                        grid: { left: '12%', right: '8%', bottom: '15%' }
+                    };
+
+                    chart.setOption(option);
+                    window.addEventListener('resize', () => chart.resize());
+                }
+            })
+            .catch(error => {
+                console.error('加载压力趋势失败:', error);
+            });
+    }
+
+    // 多专业对比
+    function loadMajorCompareChart() {
+        const majors = ['计算机科学与技术', '软件工程', '人工智能', '金融学', '市场营销'];
+        const colors = ['#3498db', '#2ecc71', '#9b59b6', '#e74c3c', '#f39c12'];
+
+        Promise.all(majors.map(major =>
+            axios.get('/system/pressure/trend/major?majorName=' + encodeURIComponent(major))
+        )).then(responses => {
+            const chart = echarts.init(document.getElementById('majorCompareChart'));
+
+            const series = responses.map((response, index) => {
+                if (response.data.code === 200) {
+                    return {
+                        name: majors[index],
+                        type: 'line',
+                        smooth: true,
+                        data: response.data.data.map(item => parseFloat(item.pressure).toFixed(1)),
+                        itemStyle: { color: colors[index] },
+                        lineStyle: { width: 3 }
+                    };
+                }
+                return null;
+            }).filter(s => s !== null);
+
+            const years = responses[0].data.data.map(item => item.year + '年');
+
+            const option = {
+                title: {
+                    text: '不同专业就业压力对比',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: majors,
+                    bottom: '5%',
+                    left: 'center'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: years,
+                    boundaryGap: false
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '压力指数',
+                    min: 30,
+                    max: 70
+                },
+                series: series,
+                grid: { left: '10%', right: '8%', bottom: '15%', top: '15%' }
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }).catch(error => {
+            console.error('加载专业对比失败:', error);
+        });
+    }
+
+    // 搜索专业趋势
+    function searchMajorTrend() {
+        const majorName = document.getElementById('majorSelect').value;
+
+        axios.get('/system/pressure/trend/major?majorName=' + encodeURIComponent(majorName))
+            .then(response => {
+                if (response.data.code === 200) {
+                    const data = response.data.data;
+                    const chart = echarts.init(document.getElementById('searchResultChart'));
+
+                    const option = {
+                        title: {
+                            text: `${majorName} 就业压力趋势`,
+                            left: 'center'
+                        },
+                        tooltip: {
+                            trigger: 'axis',
+                            formatter: function(params) {
+                                const value = params[0].value;
+                                let level = '低压力';
+                                if (value >= 60) level = '高压力';
+                                else if (value >= 40) level = '中压力';
+                                return `${params[0].name}<br/>压力指数: ${value}<br/>【${level}】`;
+                            }
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: data.map(item => item.year + '年')
+                        },
+                        yAxis: {
+                            type: 'value',
+                            name: '压力指数',
+                            min: 0,
+                            max: 100
+                        },
+                        series: [{
+                            data: data.map(item => parseFloat(item.pressure).toFixed(1)),
+                            type: 'line',
+                            smooth: true,
+                            lineStyle: { width: 4, color: '#667eea' },
+                            itemStyle: { color: '#667eea', borderWidth: 3 },
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: 'rgba(102, 126, 234, 0.4)' },
+                                    { offset: 1, color: 'rgba(102, 126, 234, 0.1)' }
+                                ])
+                            },
+                            markLine: {
+                                silent: true,
+                                lineStyle: { type: 'dashed' },
+                                data: [
+                                    { yAxis: 40, label: { formatter: '中压力线' }, lineStyle: { color: '#f39c12' } },
+                                    { yAxis: 60, label: { formatter: '高压力线' }, lineStyle: { color: '#e74c3c' } }
+                                ]
+                            }
+                        }],
+                        grid: { left: '12%', right: '8%', bottom: '10%', top: '15%' }
+                    };
+
+                    chart.setOption(option);
+                    window.addEventListener('resize', () => chart.resize());
+                }
+            })
+            .catch(error => {
+                console.error('查询专业趋势失败:', error);
+            });
+    }
+</script>
+</body>
+</html>

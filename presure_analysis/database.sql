@@ -171,30 +171,3 @@ VALUES
 ('人工智能', 2023, 42.00, 2.15, 0.82, 42, 79.00, 89.00),
 ('金融学', 2023, 65.00, 3.80, 1.25, 70, 65.00, 72.00),
 ('市场营销', 2023, 62.00, 3.50, 1.20, 68, 67.00, 75.00);
-
--- ====================================
--- 查询示例
--- ====================================
-
--- 查询所有就业数据
--- SELECT * FROM employment_data ORDER BY create_time DESC LIMIT 10;
-
--- 查询2024年就业率最高的大学
--- SELECT university_name, AVG(employment_rate) as avg_rate
--- FROM employment_data
--- WHERE graduation_year = 2024
--- GROUP BY university_name
--- ORDER BY avg_rate DESC;
-
--- 查询各行业需求人数
--- SELECT industry_name, SUM(demand_count) as total_demand
--- FROM industry_demand
--- WHERE statistics_year = 2024
--- GROUP BY industry_name
--- ORDER BY total_demand DESC;
-
--- 查询就业压力最大的专业
--- SELECT major_name, pressure_index
--- FROM employment_pressure
--- WHERE year = 2024
--- ORDER BY pressure_index DESC;

@@ -133,7 +133,7 @@ public class CrawlerService {
 
             // 使用Jsoup爬取HTML页面
             Document doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")//反爬
                     .timeout(10000)
                     .get();
 
